@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories } from './categories.db.js'
+import { getCategories, getCategory } from './categories.db.js'
 
 const app = new Hono()
 
@@ -20,4 +20,13 @@ serve({
   port: 3000
 }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)
+})
+
+app.get('/categories/:slug', (c) => {  // context er eins og req og res
+  const slug = c.req.param('slug');
+  const category = getCategory(slug);
+  if(!category){
+    return c.json({message: 'not found'}, 404);
+  }
+  return c.json(category);
 })
