@@ -22,7 +22,7 @@ app.post('/categories', async (c) => {
   console.log(categoryToCreate);
   return c.json(null);
 });
-
+// heh
 serve({
   fetch: app.fetch,
   port: 3000
