@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories, getCategory } from './categories.db.js'
+import { getCategories, getCategory } from './routes/categories.db.js'
 
 const app = new Hono()
 
@@ -12,9 +12,17 @@ app.get('/', (context) => {
 })
 
 app.get('/categories', (c) => {
+
   const categories = getCategories();
   return c.json(categories);
 });
+
+app.post('/categories', async (c) => {
+  const categoryToCreate = await c.req.json()
+  console.log(categoryToCreate);
+  return c.json(null);
+});
+
 serve({
   fetch: app.fetch,
   port: 3000
