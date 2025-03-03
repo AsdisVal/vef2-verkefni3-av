@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories, getCategory, validateCategory } from './routes/categories.db.js'
+import { getCategories, getCategoryDB, validateCategory } from './routes/categories.db.js'
 
 const app = new Hono()
 /**
@@ -30,14 +30,20 @@ app.get('/categories', async (c) => {
 /**
  * Slóð fyrir hvern flokk er búin til hér
  */
-app.get('/categories/:slug', (c) => {  // context er eins og req og res
-  const slug = c.req.param('slug');
-  const category = getCategory(slug);
-  if(!category){
-    return c.json({message: 'not found'}, 404);
+app.get('/categories/:slug', async (c) => {  
+  try {
+    const slug = c.req.param('slug');
+    const category = await getCategoryDB(slug);
+    
+    if(!category){
+      return c.json({message: 'not found'}, 404);
+    }
+    return c.json(category);
+  } catch (error) {
+    console.error('Error retrieving category:', error);
+    return c.json({ error: 'Internal Error'}, 500);
   }
-  return c.json(category);
-})
+});
 
 /**
  * Hér búum við til nýjan flokk.

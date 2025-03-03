@@ -51,12 +51,6 @@ export async function getCategories(): Promise<Array<Category>> {
     return categories;
 }
 
-export function getCategory(slug: string): Category | null {
-   const cat = mockCategories.find(c => 
-    c.slug === slug)
-    
-    return cat ?? null;
-}
 
 /**
  * safeParse skilar discriminatedUnion: SAMMENGI af Success og Error.
@@ -74,3 +68,7 @@ export function validateCategory(categoryToValidate: unknown) {
     //tékkum svo í app.post(/categories) og tökum afstöðuna þar!!
 }
 
+
+export async function getCategoryDB(slug: string): Promise<Category | null> {
+    return await prisma.categories.findUnique({ where: { slug } });
+  }
