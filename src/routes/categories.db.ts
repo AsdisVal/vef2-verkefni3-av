@@ -13,7 +13,7 @@ const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
 
 /**
  * CategoryToCreateSchema kemur frá notendum sem 
- * býr til nýja færslu í gagnagrunninn.
+ * býr til nýjan flokk í gagnagrunninn.
  */
 const CategoryToCreateSchema = z.object({
     title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
@@ -41,6 +41,10 @@ const mockCategories: Array<Category> = [
 
 const prisma = new PrismaClient();
 
+/**
+ * Nær í flokkana úr gagnasafninu
+ * (Vitnanir: GET/ categories)
+ */
 export async function getCategories(
 limit: number = 10,
 offset: number = 0
@@ -68,9 +72,8 @@ export function getCategory(slug: string): Category | null {
 export function validateCategory(categoryToValidate: unknown) {
     //notum zod með safeParse, sem tekur við gögnum sem er unknown
     const result = CategoryToCreateSchema.safeParse(categoryToValidate)
-
-    //þurfum nú að pæla hverju viljum við skila en þurfum ekki að ákveða það 
-    // hér og gerum þess vegna return result
+    //þurfum nú að pæla hverju viljum við skila en þurfum ekki að ákveða 
     return result
     //tékkum svo í app.post(/categories) og tökum afstöðuna þar!!
 }
+

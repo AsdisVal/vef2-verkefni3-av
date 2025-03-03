@@ -3,7 +3,9 @@ import { Hono } from 'hono'
 import { getCategories, getCategory, validateCategory } from './routes/categories.db.js'
 
 const app = new Hono()
-
+/**
+ * Þetta er Homepage
+ */
 app.get('/', (context) => {
   const data = {
     hello:'hono'
@@ -11,12 +13,19 @@ app.get('/', (context) => {
   return context.json(data)
 })
 
+
+/**
+ * Listi af flokkunum er hér
+ */
 app.get('/categories', async (c) => {
 
   const categories = await getCategories();
   return c.json(categories);
 });
 
+/**
+ * Slóð fyrir hvern flokk er búin til hér
+ */
 app.get('/categories/:slug', (c) => {  // context er eins og req og res
   const slug = c.req.param('slug');
   const category = getCategory(slug);
@@ -26,23 +35,37 @@ app.get('/categories/:slug', (c) => {  // context er eins og req og res
   return c.json(category);
 })
 
-app.post('/categories', async (c) => {
+/**
+ * Hér búum við til nýjan flokk.
+ * 
+ * Ef flokkur er nýr-> RETURN: 201 + upplýsingar um flokk 
+ * Ef flokkur var nú þegar hér-> RETURN: 200 + uppl.
+ * Ef það vantar gögn, gögn á röngu formi eða ólöglegt
+ * innihald-> RETURN: 400 
+ * Ef villa kom upp-> RETURN: 500
+ */
+app.post('/categories', async (context) => {
   let categoryToCreate: unknown;
   try{
-    categoryToCreate = await c.req.json()
+    categoryToCreate = await context.req.json()
     console.log(categoryToCreate);
   } catch (e) {
-    return c.json({ error: 'invalid json'}, 
-    400);
+    return context.json({ error: 'invalid json'}, 400);
   }
   const validCategory = validateCategory(categoryToCreate)
-
   if(!validCategory.success) {
-    return c.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
+    return context.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
   }
-
-  return c.json(null);
+  return context.json(null);
 });
+
+
+app.delete('/categories/:slug' (c) => {
+  const slug = c.req.param('slug');
+  const category = getCategory(slug);
+})
+
+
 
 
 serve({
