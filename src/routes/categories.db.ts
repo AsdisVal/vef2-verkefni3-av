@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
     id: z.number(),
-    title: z.string(),
+    title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
     slug: z.string()
 });
 
