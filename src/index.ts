@@ -18,9 +18,13 @@ app.get('/', (context) => {
  * Listi af flokkunum er hér
  */
 app.get('/categories', async (c) => {
-
-  const categories = await getCategories();
-  return c.json(categories);
+  try {
+    const categories = await getCategories();
+    return c.json(categories);
+  } catch (error) {
+    console.log('Error fetching categories:', error);
+    return c.json({ message: 'Internal Error'}, 500);
+  }
 });
 
 /**
@@ -44,7 +48,7 @@ app.get('/categories/:slug', (c) => {  // context er eins og req og res
  * innihald-> RETURN: 400 
  * Ef villa kom upp-> RETURN: 500
  */
-app.post('/categories', async (context) => {
+app.post('/category', async (context) => {
   let categoryToCreate: unknown;
   try{
     categoryToCreate = await context.req.json()
@@ -59,14 +63,8 @@ app.post('/categories', async (context) => {
   return context.json(null);
 });
 
-
-app.delete('/categories/:slug' (c) => {
-  const slug = c.req.param('slug');
-  const category = getCategory(slug);
-})
-
-
-
+app.patch('/category/:slug');
+app.delete('/category/:slug');
 
 serve({
   fetch: app.fetch,

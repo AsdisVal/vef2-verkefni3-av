@@ -25,8 +25,8 @@ model Questions {
 
 model Answers {
   id         Int       @id @default(autoincrement())
-  question   Questions @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  categoryId Int
+  question   Questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId Int
   answer     String    @db.VarChar(512)
   correct    Boolean   @default(false)
 }

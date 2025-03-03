@@ -24,18 +24,18 @@ type Category = z.infer<typeof CategorySchema>;
 const mockCategories: Array<Category> = [
     {
         id: 1,
-        slug: 'html',
-        title: 'HTML'
+        title: 'HTML',
+        slug: 'html'
     },
     {
         id: 2,
-        slug: 'css',
-        title: 'CSS'
+        title: 'CSS',
+        slug: 'css'
     },
     {
         id: 3,
-        slug: 'js',
-        title: 'JavaSript'
+        title: 'JavaSript',
+        slug: 'js'
     }
 ];
 
@@ -45,10 +45,7 @@ const prisma = new PrismaClient();
  * Nær í flokkana úr gagnasafninu
  * (Vitnanir: GET/ categories)
  */
-export async function getCategories(
-limit: number = 10,
-offset: number = 0
-): Promise<Array<Category>> {
+export async function getCategories(): Promise<Array<Category>> {
     const categories = await prisma.categories.findMany()
     console.log('categories :>> ', categories);
     return categories;
