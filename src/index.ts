@@ -18,8 +18,14 @@ app.get('/categories', (c) => {
 });
 
 app.post('/categories', async (c) => {
-  const categoryToCreate = await c.req.json()
-  console.log(categoryToCreate);
+  try{
+    const categoryToCreate = await c.req.json()
+    console.log(categoryToCreate);
+    
+  } catch (e) {
+    return c.json({ error: 'invalid json'}, 
+    400);
+  }
   return c.json(null);
 });
 // heh
