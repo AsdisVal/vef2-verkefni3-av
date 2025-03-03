@@ -1,8 +1,14 @@
-type Category = {
-    id: number;
-    slug: string;
-    title: string;
-}
+import { z } from "zod";
+
+const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
+    id: z.number(),
+    title: z.string(),
+    slug: z.string()
+});
+
+
+type Category = z.infer<typeof CategorySchema>;
+
 const mockCategories: Array<Category> = [
     {
         id: 1,
