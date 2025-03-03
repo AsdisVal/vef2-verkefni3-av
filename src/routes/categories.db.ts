@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import { title } from "process";
 import { z } from "zod";
 
@@ -38,10 +39,11 @@ const mockCategories: Array<Category> = [
     }
 ]
 
-export function getCategories(limit: number = 10,  offset: number = 0): Array<Category> {
-    
-    console.log(limit);
-    return mockCategories;
+export async function getCategories(limit: number = 10,
+offset: number = 0): Promise<Array<Category>> {
+    const prisma = new PrismaClient();
+    const categories = await prisma.categories.findMany()
+    return categories;
 }
 
 export function getCategory(slug: string): Category | null {
