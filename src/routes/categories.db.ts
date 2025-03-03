@@ -1,11 +1,22 @@
+import { title } from "process";
 import { z } from "zod";
 
+/**
+ * CategorySchema kemur frá gagnagrunninum
+ */
 const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
     id: z.number(),
     title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
     slug: z.string()
 });
 
+/**
+ * CategoryToCreateSchema kemur frá notendum sem 
+ * býr til nýja færslu í gagnagrunninn.
+ */
+const CategoryToCreateSchema = z.object({
+    title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
+});
 
 type Category = z.infer<typeof CategorySchema>;
 
@@ -39,4 +50,15 @@ export function getCategory(slug: string): Category | null {
     c.slug === slug)
     
     return cat ?? null;
+}
+
+export function validateCategory(categoryToValidate: unknown) {
+    //notum zod með safeParse, sem tekur við gögnum sem er unknown
+    const result = CategoryToCreateSchema.safeParse(categoryToValidate)
+
+    //þurfum nú að pæla hverju viljum við skila
+    if(result.success) {
+        return result.success;
+    }
+    //tékkum svo í app.post(/categories)
 }

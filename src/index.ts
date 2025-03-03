@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories, getCategory } from './routes/categories.db.js'
+import { getCategories, getCategory, validateCategory } from './routes/categories.db.js'
 
 const app = new Hono()
 
@@ -18,17 +18,24 @@ app.get('/categories', (c) => {
 });
 
 app.post('/categories', async (c) => {
+  let categoryToCreate: unknown;
   try{
-    const categoryToCreate = await c.req.json()
+    categoryToCreate = await c.req.json()
     console.log(categoryToCreate);
-    
   } catch (e) {
     return c.json({ error: 'invalid json'}, 
     400);
   }
+  const validCategory = validateCategory(categoryToCreate)
+
+  if(!validCategory) {
+    return c.json({ error: 'invalid data'}, 400);
+  }
+
   return c.json(null);
 });
-// heh
+
+
 serve({
   fetch: app.fetch,
   port: 3000
