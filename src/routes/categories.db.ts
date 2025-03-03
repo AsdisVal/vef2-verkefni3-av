@@ -37,17 +37,20 @@ const mockCategories: Array<Category> = [
         slug: 'js',
         title: 'JavaSript'
     }
-]
+];
 
-export async function getCategories(limit: number = 10,
-offset: number = 0): Promise<Array<Category>> {
-    const prisma = new PrismaClient();
+const prisma = new PrismaClient();
+
+export async function getCategories(
+limit: number = 10,
+offset: number = 0
+): Promise<Array<Category>> {
     const categories = await prisma.categories.findMany()
+    console.log('categories :>> ', categories);
     return categories;
 }
 
 export function getCategory(slug: string): Category | null {
-
    const cat = mockCategories.find(c => 
     c.slug === slug)
     

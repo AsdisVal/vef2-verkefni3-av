@@ -11,11 +11,20 @@ app.get('/', (context) => {
   return context.json(data)
 })
 
-app.get('/categories', (c) => {
+app.get('/categories', async (c) => {
 
-  const categories = getCategories();
+  const categories = await getCategories();
   return c.json(categories);
 });
+
+app.get('/categories/:slug', (c) => {  // context er eins og req og res
+  const slug = c.req.param('slug');
+  const category = getCategory(slug);
+  if(!category){
+    return c.json({message: 'not found'}, 404);
+  }
+  return c.json(category);
+})
 
 app.post('/categories', async (c) => {
   let categoryToCreate: unknown;
@@ -43,11 +52,4 @@ serve({
   console.log(`Server is running on http://localhost:${info.port}`)
 })
 
-app.get('/categories/:slug', (c) => {  // context er eins og req og res
-  const slug = c.req.param('slug');
-  const category = getCategory(slug);
-  if(!category){
-    return c.json({message: 'not found'}, 404);
-  }
-  return c.json(category);
-})
+
