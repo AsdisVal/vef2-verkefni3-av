@@ -28,8 +28,8 @@ app.post('/categories', async (c) => {
   }
   const validCategory = validateCategory(categoryToCreate)
 
-  if(!validCategory) {
-    return c.json({ error: 'invalid data'}, 400);
+  if(!validCategory.success) {
+    return c.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
   }
 
   return c.json(null);

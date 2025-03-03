@@ -52,13 +52,20 @@ export function getCategory(slug: string): Category | null {
     return cat ?? null;
 }
 
+/**
+ * safeParse skilar discriminatedUnion: SAMMENGI af Success og Error.
+ * ef SafeParseSuccess<Output> er með success: true, veit það að það er í því mengi.
+ * Það sama gildir með SafeParseError<Input> með success: false, veit að það er í 
+ * error menginu.
+ * @param categoryToValidate: unknown 
+ * @returns 
+ */
 export function validateCategory(categoryToValidate: unknown) {
     //notum zod með safeParse, sem tekur við gögnum sem er unknown
     const result = CategoryToCreateSchema.safeParse(categoryToValidate)
 
-    //þurfum nú að pæla hverju viljum við skila
-    if(result.success) {
-        return result.success;
-    }
-    //tékkum svo í app.post(/categories)
+    //þurfum nú að pæla hverju viljum við skila en þurfum ekki að ákveða það 
+    // hér og gerum þess vegna return result
+    return result
+    //tékkum svo í app.post(/categories) og tökum afstöðuna þar!!
 }
