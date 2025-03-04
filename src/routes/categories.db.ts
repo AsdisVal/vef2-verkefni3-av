@@ -72,3 +72,26 @@ export function validateCategory(categoryToValidate: unknown) {
 export async function getCategoryDB(slug: string): Promise<Category | null> {
     return await prisma.categories.findUnique({ where: { slug } });
   }
+
+export async function createCategory(title: string): Promise<{ category: Category, created: boolean }> {
+    // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
+    const slug = title.toLowerCase().trim().replace(/\s+/g, '-');
+    
+    // Check if a category with this slug already exists in the database
+    const existing = await prisma.categories.findUnique({ where: { slug } });
+    if (existing) {
+      // Return the existing category and a flag indicating no new creation
+      return { category: existing, created: false };
+    }
+    
+    // Otherwise, create a new category 
+    const newCategory = await prisma.categories.create({
+      data: {
+        title,
+        slug,
+      },
+    });
+    
+    return { category: newCategory, created: true };
+  }
+  

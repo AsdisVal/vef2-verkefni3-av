@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories, getCategoryDB, validateCategory } from './routes/categories.db.js'
+import { getCategories, getCategoryDB, validateCategory, createCategory } from './routes/categories.db.js'
 
 const app = new Hono()
 /**
@@ -58,7 +58,6 @@ app.post('/category', async (context) => {
   let categoryToCreate: unknown;
   try{
     categoryToCreate = await context.req.json()
-    console.log(categoryToCreate);
   } catch (e) {
     return context.json({ error: 'invalid json'}, 400);
   }
@@ -66,7 +65,20 @@ app.post('/category', async (context) => {
   if(!validCategory.success) {
     return context.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
   }
-  return context.json(null);
+
+  // validCategory.data has the validated object with a title field.
+  const { title } = validCategory.data;
+  try {
+    const { category, created } = await createCategory(title);
+    if (created) {
+      return context.json(category, 201);
+    } else {
+      return context.json(category, 200);
+    }
+  } catch (error) {
+    console.error('Error creating category:', error);
+    return context.json({ error: 'Internal Error' }, 500);
+  }
 });
 
 app.patch('/category/:slug');
