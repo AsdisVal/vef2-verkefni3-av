@@ -119,8 +119,16 @@ export async function updateCategory(slug: string, title: string): Promise<Categ
   }
 
   export async function deleteCategory(slug: string): Promise<boolean> {
-    await prisma.categories.delete({
-        where: {slug}
-    });
-    return true;
-  }
+    try {
+        await prisma.categories.delete({
+            where: {slug}
+        });
+        return true;
+    
+    } catch (error: any) {
+        if (error.code === 'P2025') {
+            return false;
+        }
+        throw error;
+    } 
+}
