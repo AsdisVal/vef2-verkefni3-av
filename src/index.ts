@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import { getCategories, getCategoryDB, validateCategory, createCategory } from './routes/categories.db.js'
+import { getCategories, getCategoryDB, validateCategory, createCategory, updateCategory } from './routes/categories.db.js'
+import { error } from 'console'
 
 const app = new Hono()
 /**
@@ -81,7 +82,31 @@ app.post('/category', async (context) => {
   }
 });
 
-app.patch('/category/:slug');
+app.patch('/category/:slug', async (c) => {
+  const slug = c.req.param('slug');
+  let updateData: unknown;
+
+  try {
+    updateData = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'invalid json'}, 400);
+  }
+
+  const validUpdate = validateCategory(updateData);
+  if(!validUpdate.success) {
+    return c.json( { error: 'invalid data', errors: validUpdate.error.flatten()}, 400);
+  }
+  const { title } = validUpdate.data;
+  try {
+    const updatedCategory = await updateCategory(slug, title);
+    if(!updatedCategory) {
+      return c.json({ error: 'Category not found'}, 404);
+    }
+  } catch (error) {
+    console.error('Error updating category:', error);
+    return c.json({ error: 'Internal error:'}, 500);
+  }
+})
 app.delete('/category/:slug');
 
 serve({

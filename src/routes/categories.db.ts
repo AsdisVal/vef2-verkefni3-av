@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { title } from "process";
 import { z } from "zod";
 
 /**
@@ -95,3 +94,26 @@ export async function createCategory(title: string): Promise<{ category: Categor
     return { category: newCategory, created: true };
   }
   
+
+/**
+ * Uppfærir flokk með tiltekinni slug.
+ * Uppfærir aðeins titilinn og endurgerir slug út frá nýja titlinum.
+ * Skilar uppfærðum flokki eða null ef enginn flokk fannst.
+ */
+export async function updateCategory(slug: string, title: string): Promise<Category | null> {
+    // Generate a new slug from the updated title.
+    const newSlug = title.toLowerCase().trim().replace(/\s+/g, '-');
+    try {
+      const updatedCategory = await prisma.categories.update({
+        where: { slug },
+        data: { title, slug: newSlug }
+      });
+      return updatedCategory;
+    } catch (error: any) {
+      // Prisma throws error code 'P2025' if no record is found.
+      if (error.code === 'P2025') {
+        return null;
+      }
+      throw error;
+    }
+  }
