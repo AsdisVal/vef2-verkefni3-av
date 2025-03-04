@@ -96,7 +96,7 @@ export async function createCategory(title: string): Promise<{ category: Categor
   
 
 /**
- * Uppfærir flokk með tiltekinni slug.
+ * Uppfærir flokk með .update frá prisma
  * Uppfærir aðeins titilinn og endurgerir slug út frá nýja titlinum.
  * Skilar uppfærðum flokki eða null ef enginn flokk fannst.
  */
@@ -116,4 +116,11 @@ export async function updateCategory(slug: string, title: string): Promise<Categ
       }
       throw error;
     }
+  }
+
+  export async function deleteCategory(slug: string): Promise<boolean> {
+    await prisma.categories.delete({
+        where: {slug}
+    });
+    return true;
   }
