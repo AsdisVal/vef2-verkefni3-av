@@ -7,7 +7,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import xss from "xss";
+import sxss from "xss"; 
 
 /**
  * zod-schema
@@ -35,6 +35,7 @@ prisma mun sjá um að tengjast gagnagrunni með DATABASE_URL
 strengnum
  */ 
 const prisma = new PrismaClient();
+const categoryCriteria = (slug: string) => ({ slug })
 
 /**
  * Nær í flokkana úr gagnasafninu
@@ -63,18 +64,22 @@ export function validateCategory(categoryToValidate: unknown) {
     //tékkum svo í app.post(/categories) og tökum afstöðuna þar!!
 }
 
-
+/**
+ * Finnur flokk með slug
+ * @param slug fyrir category
+ * @returns nafni fyrir category
+ */
 export async function getCategory(slug: string): Promise<Category | null> {
-    return await prisma.categories.findUnique({ where: { slug } });
+    return await prisma.categories.findUnique({ where: categoryCriteria(slug) });
   }
 
 export async function createCategory(title: string): Promise<{ category: Category, created: boolean }> {
     // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
-    title = xss(title);
+    title = sxss(title);
     const slug = title.toLowerCase().trim().replace(/\s+/g, '-');
     
     // Check if a category with this slug already exists in the database
-    const existing = await prisma.categories.findUnique({ where: { slug } });
+    const existing = await prisma.categories.findUnique({ where: categoryCriteria(slug) });
     if (existing) {
       // Return the existing category and a flag indicating no new creation
       return { category: existing, created: false };
@@ -99,33 +104,28 @@ export async function createCategory(title: string): Promise<{ category: Categor
  */
 export async function updateCategory(slug: string, title: string): Promise<Category | null> {
     // Generate a new slug from the updated title.
+    title = sxss(title);
     const newSlug = title.toLowerCase().trim().replace(/\s+/g, '-');
     try {
       const updatedCategory = await prisma.categories.update({
-        where: { slug },
+        where: categoryCriteria(slug),
         data: { title, slug: newSlug }
       });
       return updatedCategory;
-    } catch (error: any) {
-      // Prisma throws error code 'P2025' if no record is found.
-      if (error.code === 'P2025') {
-        return null;
-      }
-      throw error;
+    } catch (error) {
+      console.error('Error updating category:', error);
+      return null;
     }
   }
 
   export async function deleteCategory(slug: string): Promise<boolean> {
     try {
         await prisma.categories.delete({
-            where: {slug}
+            where: categoryCriteria(slug)
         });
         return true;
-    
-    } catch (error: any) {
-        if (error.code === 'P2025') {
-            return false;
-        }
-        throw error;
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        return false;
     } 
 }
