@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
+import { getQuestions, validateQuestion, createQuestion} from './routes/questions.db.js'
 
 const app = new Hono();
 /**
@@ -50,7 +51,7 @@ app.get('/categories/:slug', async (c) => {
 /**
  * CREATE: Býr til nýjan flokk
  */
-app.post('/category', async (c) => {
+app.post('/categories', async (c) => {
   let data: unknown;
   try{
     data = await c.req.json();
@@ -80,7 +81,7 @@ app.post('/category', async (c) => {
 /**
  * UPDATE: uppfærir flokk
  */
-app.patch('/category/:slug', async (c) => {
+app.patch('/categories/:slug', async (c) => {
   const slugParam = c.req.param('slug');
   let data: unknown;
   try {
@@ -108,7 +109,7 @@ app.patch('/category/:slug', async (c) => {
 /**
  * DELETE: eyðir flokki
  */
-app.delete('/category/:slug', async (c) => {
+app.delete('/categories/:slug', async (c) => {
   const slugParam = c.req.param('slug'); //extract parameter
   
   try {
@@ -122,6 +123,51 @@ app.delete('/category/:slug', async (c) => {
     return c.json({error: 'Internal error'}, 500);
   }
 });
+
+/****************************QUESTIONS************************************* */
+
+/**
+ * READ: Skilar öllum spurningum úr öllum flokkum
+ */
+app.get('/questions', async (c) => {
+  try {
+    const questions = await getQuestions();
+    return c.json(questions);
+  } catch (err) {
+    console.error("Error fetching questions", err);
+    return c.json({message: 'Internal error'}, 500);
+  }
+});
+
+
+
+/**
+ * CREATE: Býr til nýja spurningu
+ */
+app.post('/questions', async (c) => {
+  let rawData: unknown;
+  try{
+    rawData = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'ógilt JSON'}, 400);
+  }
+  const validationResult = validateQuestion(rawData);
+  if(!validationResult.success) {
+    const errors = validationResult.error.flatten()
+    return c.json({error: 'Ógild gögn', details: errors }, 400);
+  }
+  
+  try {
+    const newQuestion = await createQuestion(validationResult.data);
+    return c.json(newQuestion, 201);
+  } catch (error) {
+    console.error('Error creating question', error);
+    return c.json({error: 'Internal error'}, 500);
+  }
+});    
+
+
+
 
 serve({
   fetch: app.fetch,
