@@ -3,21 +3,21 @@ import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategoryDB, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
 
-const app = new Hono()
+const app = new Hono();
 /**
- * Þetta er Homepage
+ * Þetta er Heimasíðan
  */
-app.use(prettyJSON()) // With options: prettyJSON({ space: 4 })
+app.use(prettyJSON()); // With options: prettyJSON({ space: 4 })
 app.get('/', (c) => {
   const data = {
     hello:'hono'
-  }
-  return c.json(data)
-})
+  };
+  return c.json(data);
+});
 
 
 /**
- * Listi af flokkunum er hér
+ * READ: skilar lista af flokkum
  */
 app.get('/categories', async (c) => {
   try {
@@ -30,17 +30,17 @@ app.get('/categories', async (c) => {
 });
 
 /**
- * Slóð fyrir hvern flokk er búin til hér
+ * READ:skilar stökum flokki
  */
-app.get('/categories/:slug', async (c) => {  
+app.get('/categories/:slug', async (c) => { 
+  const slugParam = c.req.param('slug'); 
   try {
-    const slug = c.req.param('slug');
-    const category = await getCategoryDB(slug);
+    const category = await getCategoryDB(slugParam);
     
     if(!category){
-      return c.json({message: 'not found'}, 404);
+      return c.json({message: 'Category not found'}, 404);
     }
-    return c.json(category);
+    return c.json(category, 200);
   } catch (error) {
     console.error('Error retrieving category:', error);
     return c.json({ error: 'Internal Error'}, 500);
@@ -48,22 +48,16 @@ app.get('/categories/:slug', async (c) => {
 });
 
 /**
- * Hér búum við til nýjan flokk.
- * 
- * Ef flokkur er nýr-> RETURN: 201 + upplýsingar um flokk 
- * Ef flokkur var nú þegar hér-> RETURN: 200 + uppl.
- * Ef það vantar gögn, gögn á röngu formi eða ólöglegt
- * innihald-> RETURN: 400 
- * Ef villa kom upp-> RETURN: 500
+ * CREATE: Býr til nýjan flokk
  */
 app.post('/category', async (c) => {
   let data: unknown;
   try{
-    data = await c.req.json()
+    data = await c.req.json();
   } catch (e) {
     return c.json({ error: 'invalid json'}, 400);
   }
-  const validCategory = validateCategory(data)
+  const validCategory = validateCategory(data);
   if(!validCategory.success) {
     return c.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
   }
@@ -84,47 +78,48 @@ app.post('/category', async (c) => {
 });
 
 /**
- * PATCH: Uppfærir category
+ * UPDATE: uppfærir flokk
  */
 app.patch('/category/:slug', async (c) => {
-  const slug = c.req.param('slug');
-  let updateData: unknown;
-
+  const slugParam = c.req.param('slug');
+  let data: unknown;
   try {
-    updateData = await c.req.json();
+    data = await c.req.json();
   } catch (e) {
     return c.json({ error: 'invalid json'}, 400);
   }
-
-  const validUpdate = validateCategory(updateData);
-  if(!validUpdate.success) {
-    return c.json( { error: 'invalid data', errors: validUpdate.error.flatten()}, 400);
+  const valid = validateCategory(data);
+  if(!valid.success) {
+    return c.json( { error: 'invalid data', errors: valid.error.flatten()}, 400);
   }
-  const { title } = validUpdate.data;
+  const { title } = valid.data;
   try {
-    const updatedCategory = await updateCategory(slug, title);
-    if(!updatedCategory) {
-      return c.json({ error: 'Category not found'}, 404);
+    const updated = await updateCategory(slugParam, title);
+    if(!updated) {
+      return c.json({ error: 'No category found with this slug'}, 404);
     }
-    return c.json(updatedCategory, 200);
-  } catch (error) {
-    console.error('Error updating category:', error);
+    return c.json(updated, 200);
+  } catch (err) {
+    console.error('Error updating category:', err);
     return c.json({ error: 'Internal error:'}, 500);
   }
-})
+});
 
+/**
+ * DELETE: eyðir flokki
+ */
 app.delete('/category/:slug', async (c) => {
-  const slug = c.req.param('slug'); //extract parameter
+  const slugParam = c.req.param('slug'); //extract parameter
   
   try {
-    const success = await deleteCategory(slug);
+    const success = await deleteCategory(slugParam);
     if(!success) {
       return c.json({error: 'Category not found'}, 404);
     }
-    return c.text(`${slug} is deleted!`);
+    return c.json({message: `Flokki ${slugParam} hefur verið eytt`}); //204
   } catch (error) {
     console.error('Error deleting category', error);
-    return c.json({error: 'Internal error'}, 500)
+    return c.json({error: 'Internal error'}, 500);
   }
 });
 
@@ -132,7 +127,7 @@ serve({
   fetch: app.fetch,
   port: 3000
 }, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+  console.log(`Server is running on http://localhost:${info.port}`);
+});
 
 

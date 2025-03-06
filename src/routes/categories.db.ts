@@ -1,7 +1,15 @@
+/**
+ * Öll samskipti við gagnagrunn og gagnastöðlun fara í gegnum aðskilin föll
+ * sem categories.db.ts heldur utan um. 
+ * 
+ * Þessi uppsetning eykur endurnotkun og einfaldar prófanir.
+ */
+
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
 /**
+ * zod-schema
  * CategorySchema kemur frá gagnagrunninum
  */
 const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
@@ -11,6 +19,7 @@ const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
 });
 
 /**
+ * zod-schema
  * CategoryToCreateSchema kemur frá notendum sem 
  * býr til nýjan flokk í gagnagrunninn.
  */
@@ -43,7 +52,7 @@ export async function getCategories(): Promise<Array<Category>> {
  * Það sama gildir með SafeParseError<Input> með success: false, veit að það er í 
  * error menginu.
  * @param categoryToValidate: unknown 
- * @returns 
+ * @returns result
  */
 export function validateCategory(categoryToValidate: unknown) {
     //notum zod með safeParse, sem tekur við gögnum sem er unknown
