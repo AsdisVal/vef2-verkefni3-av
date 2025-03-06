@@ -7,6 +7,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import xss from "xss";
 
 /**
  * zod-schema
@@ -69,6 +70,7 @@ export async function getCategory(slug: string): Promise<Category | null> {
 
 export async function createCategory(title: string): Promise<{ category: Category, created: boolean }> {
     // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
+    title = xss(title);
     const slug = title.toLowerCase().trim().replace(/\s+/g, '-');
     
     // Check if a category with this slug already exists in the database
