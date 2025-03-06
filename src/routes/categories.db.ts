@@ -52,18 +52,18 @@ export async function getCategories(): Promise<Array<Category>> {
  * Það sama gildir með SafeParseError<Input> með success: false, veit að það er í 
  * error menginu.
  * @param categoryToValidate: unknown 
- * @returns result
+ * @returns validationResult
  */
 export function validateCategory(categoryToValidate: unknown) {
     //notum zod með safeParse, sem tekur við gögnum sem er unknown
-    const result = CategoryToCreateSchema.safeParse(categoryToValidate)
+    const validationResult = CategoryToCreateSchema.safeParse(categoryToValidate)
     //þurfum nú að pæla hverju viljum við skila en þurfum ekki að ákveða 
-    return result
+    return validationResult
     //tékkum svo í app.post(/categories) og tökum afstöðuna þar!!
 }
 
 
-export async function getCategoryDB(slug: string): Promise<Category | null> {
+export async function getCategory(slug: string): Promise<Category | null> {
     return await prisma.categories.findUnique({ where: { slug } });
   }
 

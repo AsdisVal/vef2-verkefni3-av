@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
-import { getCategories, getCategoryDB, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
+import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
 
 const app = new Hono();
 /**
@@ -35,7 +35,7 @@ app.get('/categories', async (c) => {
 app.get('/categories/:slug', async (c) => { 
   const slugParam = c.req.param('slug'); 
   try {
-    const category = await getCategoryDB(slugParam);
+    const category = await getCategory(slugParam);
     
     if(!category){
       return c.json({message: 'Category not found'}, 404);
@@ -116,7 +116,7 @@ app.delete('/category/:slug', async (c) => {
     if(!success) {
       return c.json({error: 'Category not found'}, 404);
     }
-    return c.json({message: `Flokki ${slugParam} hefur verið eytt`}); //204
+    return c.json({message: "Flokki 'slug' hefur verið eytt"}); //204
   } catch (error) {
     console.error('Error deleting category', error);
     return c.json({error: 'Internal error'}, 500);
