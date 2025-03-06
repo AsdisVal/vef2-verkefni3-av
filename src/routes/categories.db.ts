@@ -20,24 +20,10 @@ const CategoryToCreateSchema = z.object({
 
 type Category = z.infer<typeof CategorySchema>;
 
-const mockCategories: Array<Category> = [
-    {
-        id: 1,
-        title: 'HTML',
-        slug: 'html'
-    },
-    {
-        id: 2,
-        title: 'CSS',
-        slug: 'css'
-    },
-    {
-        id: 3,
-        title: 'JavaSript',
-        slug: 'js'
-    }
-];
-
+/* 
+prisma mun sjá um að tengjast gagnagrunni með DATABASE_URL
+strengnum
+ */ 
 const prisma = new PrismaClient();
 
 /**

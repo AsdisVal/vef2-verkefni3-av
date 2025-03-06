@@ -2,18 +2,17 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategoryDB, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
-import { error } from 'console'
 
 const app = new Hono()
 /**
  * Þetta er Homepage
  */
 app.use(prettyJSON()) // With options: prettyJSON({ space: 4 })
-app.get('/', (context) => {
+app.get('/', (c) => {
   const data = {
     hello:'hono'
   }
-  return context.json(data)
+  return c.json(data)
 })
 
 
@@ -57,16 +56,16 @@ app.get('/categories/:slug', async (c) => {
  * innihald-> RETURN: 400 
  * Ef villa kom upp-> RETURN: 500
  */
-app.post('/category', async (context) => {
-  let categoryToCreate: unknown;
+app.post('/category', async (c) => {
+  let data: unknown;
   try{
-    categoryToCreate = await context.req.json()
+    data = await c.req.json()
   } catch (e) {
-    return context.json({ error: 'invalid json'}, 400);
+    return c.json({ error: 'invalid json'}, 400);
   }
-  const validCategory = validateCategory(categoryToCreate)
+  const validCategory = validateCategory(data)
   if(!validCategory.success) {
-    return context.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
+    return c.json({ error: 'invalid data', errors: validCategory.error.flatten()}, 400);
   }
 
   // validCategory.data has the validated object with a title field.
@@ -74,16 +73,19 @@ app.post('/category', async (context) => {
   try {
     const { category, created } = await createCategory(title);
     if (created) {
-      return context.json(category, 201);
+      return c.json(category, 201);
     } else {
-      return context.json(category, 200);
+      return c.json(category, 200);
     }
   } catch (error) {
     console.error('Error creating category:', error);
-    return context.json({ error: 'Internal Error' }, 500);
+    return c.json({ error: 'Internal Error' }, 500);
   }
 });
 
+/**
+ * PATCH: Uppfærir category
+ */
 app.patch('/category/:slug', async (c) => {
   const slug = c.req.param('slug');
   let updateData: unknown;
@@ -104,6 +106,7 @@ app.patch('/category/:slug', async (c) => {
     if(!updatedCategory) {
       return c.json({ error: 'Category not found'}, 404);
     }
+    return c.json(updatedCategory, 200);
   } catch (error) {
     console.error('Error updating category:', error);
     return c.json({ error: 'Internal error:'}, 500);
