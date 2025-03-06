@@ -5,6 +5,7 @@
  * Þessi uppsetning eykur endurnotkun og einfaldar prófanir.
  */
 
+import sxss from "xss"; 
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
@@ -44,9 +45,6 @@ const QuestionToCreateSchema = z.object({
     }),
 });
 
-
-
-/** TYPE DEFINITIONS */
 type Question = z.infer<typeof QuestionSchema>;
 type QuestionToCreate = z.infer<typeof QuestionToCreateSchema>;
 
@@ -64,16 +62,18 @@ export function validateQuestion(data: unknown) {
 }
 
 export async function createQuestion(data: QuestionToCreate): Promise<{ question: Question, created: boolean}> {
-    
+    const sanatizedQuestion = sxss(data.question);
+    const sanatizedAnswers = data.answers.map(answer => ({
+        answer: sxss(answer.answer),
+        correct: answer.correct
+    }));
+
     const newQuestion = await prisma.questions.create({
         data: {
-            question: data.question,
+            question: sanatizedQuestion,
             categoryId: data.categoryId,
             answers: {
-                create: data.answers.map(answer => ({
-                    answer: answer.answer,
-                    correct: answer.correct
-                }))
+                create: sanatizedAnswers
             }
         },
         include: {

@@ -15,8 +15,8 @@ import xss from "xss";
  */
 const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
     id: z.number(),
-    title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
-    slug: z.string()
+    title: z.string().min(3, 'title must be at least 3 letters').max(128, 'title must be at most 128 letters'),
+    slug: z.string().min(1, 'slug must be at least 1 letter').max(128, 'slug must be at most 128 letters'),
 });
 
 /**
@@ -25,7 +25,7 @@ const CategorySchema = z.object({ // þetta er kóði sem þarf að geta keyrt
  * býr til nýjan flokk í gagnagrunninn.
  */
 const CategoryToCreateSchema = z.object({
-    title: z.string().min(3, 'title must be at least 3 letters').max(1024, 'title must be at most 1024 letters'),
+    title: z.string().min(3, 'title must be at least 3 letters').max(128, 'title must be at most 128 letters'),
 });
 
 type Category = z.infer<typeof CategorySchema>;
