@@ -4,8 +4,10 @@
  *
  * Þessi uppsetning eykur endurnotkun og einfaldar prófanir.
  */
+import sxss from 'xss';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+
 /**
  * zod-schema
  * QuestionSchema kemur frá gagnagrunninum
@@ -24,6 +26,13 @@ const QuestionSchema = z.object({
       'Spurning verður að vera að minnsta kosti 10 stafir, að hámarki 1024'
     ),
 });
+const answerToCreateSchema = z.object({
+  answer: z
+    .string()
+    .min(1, 'Svar má ekki vera tómt')
+    .max(512, 'Svar má ekki hafa meira en 512 stafi'),
+  correct: z.boolean().default(false),
+});
 /**
  * zod-schema
  * QuestionToCreateSchema kemur frá notendum sem
@@ -32,14 +41,18 @@ const QuestionSchema = z.object({
 const QuestionToCreateSchema = z.object({
   question: z
     .string()
-    .min(
-      10,
-      'Spurning verður að vera að minnsta kosti 10 stafir, að hámarki 1024'
-    )
-    .max(
-      1024,
-      'Spurning verður að vera að minnsta kosti 10 stafir, að hámarki 1024'
-    ),
+    .min(10, 'Spurning verður að vera að minnsta kosti 10 stafir')
+    .max(1024, 'Spurning má ekki vera lengri en 1024 stafir'),
+  categoryId: z.number({
+    required_error: 'categoryId er nauðsynleg',
+    invalid_type_error: 'categoryId verður að vera tala',
+  }),
+  answers: z
+    .array(answerToCreateSchema)
+    .min(1, 'Verður að vera amk eitt svar')
+    .refine((answers) => answers.some((answer) => answer.correct), {
+      message: 'Verður að vera amk eitt rétt svar',
+    }),
 });
 const prisma = new PrismaClient();
 export async function getQuestions() {
@@ -47,39 +60,50 @@ export async function getQuestions() {
   console.log('questions :>> ', questions);
   return questions;
 }
-export async function validateQuestion(data) {
-  if (
-    !data.question ||
-    typeof data.question !== 'string' ||
-    data.question.length > 512
-  ) {
-    throw new Error('Invalid question: Must be a string up to 512 characters.');
-  }
-  // Check that categoryId is provided and is a number
-  if (!data.categoryId || typeof data.categoryId !== 'number') {
-    throw new Error('Invalid categoryId: must be a number.');
-  }
-  const validationResult = QuestionToCreateSchema.safeParse(questionToValidate);
-  return validationResult;
+export function validateQuestion(data) {
+  const valResult = QuestionToCreateSchema.safeParse(data);
+  return valResult;
 }
-export async function createQuestion(body) {
-  // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
-  const slug = title.toLowerCase().trim().replace(/\s+/g, '-');
-  // Check if a category with this slug already exists in the database
-  const existing = await prisma.categories.findUnique({ where: { slug } });
-  if (existing) {
-    // Return the existing category and a flag indicating no new creation
-    return { category: existing, created: false };
-  }
-  // Otherwise, create a new category
-  const newCategory = await prisma.categories.create({
+export async function createQuestion(data) {
+  const sanatizedQuestion = sxss(data.question);
+  const sanatizedAnswers = data.answers.map((answer) => ({
+    answer: sxss(answer.answer),
+    correct: answer.correct,
+  }));
+  const newQuestion = await prisma.questions.create({
     data: {
-      title,
-      slug,
+      question: sanatizedQuestion,
+      categoryId: data.categoryId,
+      answers: {
+        create: sanatizedAnswers,
+      },
+    },
+    include: {
+      answers: true,
     },
   });
-  return { category: newCategory, created: true };
+  return { question: newQuestion, created: true };
 }
-export async function getQuestion(question) {
-  return await prisma.questions.findUnique({ where: { question } });
+// updateQuestion
+export async function updateQuestion(id, data) {
+  const sanatizedQuestion = sxss(data.question);
+  const sanatizedAnswers = data.answers.map((answer) => ({
+    answer: sxss(answer.answer),
+    correct: answer.correct,
+  }));
+  const updatedQuestion = await prisma.questions.update({
+    where: { id },
+    data: {
+      question: sanatizedQuestion,
+      categoryId: data.categoryId,
+      answers: {
+        deleteMany: {},
+        create: sanatizedAnswers,
+      },
+    },
+    include: {
+      answers: true,
+    },
+  });
+  return { question: updatedQuestion, updated: true };
 }

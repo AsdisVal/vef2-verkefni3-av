@@ -69,3 +69,26 @@ export async function createQuestion(data) {
     });
     return { question: newQuestion, created: true };
 }
+// updateQuestion
+export async function updateQuestion(id, data) {
+    const sanatizedQuestion = sxss(data.question);
+    const sanatizedAnswers = data.answers.map(answer => ({
+        answer: sxss(answer.answer),
+        correct: answer.correct
+    }));
+    const updatedQuestion = await prisma.questions.update({
+        where: { id },
+        data: {
+            question: sanatizedQuestion,
+            categoryId: data.categoryId,
+            answers: {
+                deleteMany: {},
+                create: sanatizedAnswers
+            }
+        },
+        include: {
+            answers: true
+        }
+    });
+    return { question: updatedQuestion, updated: true };
+}

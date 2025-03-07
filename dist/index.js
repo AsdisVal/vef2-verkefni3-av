@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { prettyJSON } from 'hono/pretty-json';
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js';
-import { getQuestions, validateQuestion, createQuestion, } from './routes/questions.db.js';
+import { getQuestions, validateQuestion, createQuestion, updateQuestion } from './routes/questions.db.js';
 const app = new Hono();
 /**
  * Þetta er Heimasíðan
@@ -162,7 +162,7 @@ app.post('/questions', async (c) => {
 });
 serve({
     fetch: app.fetch,
-    port: 8080
+    port: 3000
 }, (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
 });
