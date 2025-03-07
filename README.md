@@ -1,9 +1,7 @@
-# Vefforritun 2 2025
-
+# Vefforritun 2
 ## Verkefni 3
 
 ```
-yarn install
 yarn build
 yarn start
 ```
