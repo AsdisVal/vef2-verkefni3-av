@@ -6,5 +6,5 @@ yarn start
 ```
 
 ```
-open https://vef2-verkefni3-av.onrender.com/categories
+open [vefsíðuna](https://vef2-verkefni3-av.onrender.com/categories)
 ```
