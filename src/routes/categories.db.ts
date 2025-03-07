@@ -92,7 +92,6 @@ export async function createCategory(title: string): Promise<{ category: Categor
         slug,
       },
     });
-    
     return { category: newCategory, created: true };
   }
   
