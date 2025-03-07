@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
-import { getQuestions, validateQuestion, createQuestion, updateQuestion} from './routes/questions.db.js'
+import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId} from './routes/questions.db.js'
 
 const app = new Hono();
 /**
@@ -139,6 +139,24 @@ app.get('/questions', async (c) => {
   }
 });
 
+/**
+ * READ: Skilar spurningum m.t.t. flokki(categoryId to be specific, the slug is not needed)
+ * 
+ */
+app.get('/questions/:categoryId', async (c) => {
+  const categoryId = parseInt(c.req.param('categoryId'));
+  try{
+    const questions = await getQuestionsByCategoryId(categoryId);
+    if(!questions){
+      return c.json({message: 'Category not found'}, 404);
+    }
+    return c.json(questions, 200);
+
+  } catch (err) {
+    console.error("Error fetching questions", err);
+    return c.json({message: 'Internal error'}, 500);
+  }
+});
 
 
 /**

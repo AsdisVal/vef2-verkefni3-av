@@ -109,3 +109,11 @@ export async function updateQuestion(id: number, data: QuestionToCreate): Promis
 
     return { question: updatedQuestion, updated: true};        
 }
+
+// get question by categoryId
+export async function getQuestionsByCategoryId(categoryId: number): Promise<Array<Question>> {
+    const questions = await prisma.questions.findMany({
+        where: { categoryId }
+    });
+    return questions;
+}
