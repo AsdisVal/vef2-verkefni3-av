@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
-import { getQuestions, validateQuestion, createQuestion} from './routes/questions.db.js'
+import { getQuestions, validateQuestion, createQuestion, updateQuestion} from './routes/questions.db.js'
 
 const app = new Hono();
 /**
@@ -166,6 +166,22 @@ app.post('/questions', async (c) => {
   }
 });    
 
+// PATCH : uppfærir spurningu
+app.patch('/questions/:id', async (c) => {
+  const idParam = parseInt(c.req.param('id'), 10);
+  let data: unknown;
+  try {
+    data = await c.req.json();
+  } catch (e) {
+    return c.json({ error: 'invalid json'}, 400);
+  }
+  const valid = validateQuestion(data);
+  if(!valid.success) {
+    return c.json( { error: 'invalid data', errors: valid.error.flatten()}, 400);
+  }
+  const { categoryId, question, answers } = valid.data;
+  try {
+    const updated = await updateQuestion(idParam, { categoryId, question, answers });
 
 serve({
   fetch: app.fetch,
@@ -173,5 +189,8 @@ serve({
 }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`);
 });
-
-
+  } catch (err) {
+    console.error('Error updating question:', err);
+    return c.json({ error: 'Internal error:'}, 500);
+  }  
+});
