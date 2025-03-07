@@ -1,8 +1,10 @@
 ```
-npm install
-npm run dev
+### Verkefni 3 í Vefforritun 2
+yarn install
+yarn build
+yarn start
 ```
 
 ```
-open http://localhost:3000
+open https://vef2-verkefni3-av.onrender.com/categories
 ```
