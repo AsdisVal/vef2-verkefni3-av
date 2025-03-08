@@ -108,7 +108,8 @@ export async function updateCategory(slug, title) {
 }
 /**
  *
- * @param {String} slug
+ * @param {String} slug sluggið fyrir flokk
+ * @returns
  */
 export async function deleteCategory(slug) {
     try {
