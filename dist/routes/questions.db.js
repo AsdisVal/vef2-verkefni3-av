@@ -7,6 +7,7 @@
 import sxss from "xss";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+const prisma = new PrismaClient();
 /**
  * zod-schema
  * QuestionSchema kemur frá gagnagrunninum
@@ -39,7 +40,16 @@ const QuestionToCreateSchema = z.object({
         message: 'Verður að vera amk eitt rétt svar'
     }),
 });
-const prisma = new PrismaClient();
+/**
+ * Schema for updating a question(both fields are optional)
+ */
+const QuestionUpdateSchema = z.object({
+    question: z.string()
+        .min(10, 'Spurning verður að vera að minnsta kosti 10 stafir, að hámarki 1024')
+        .max(1024, 'Spurning er í mesta lagi 1024 stafir, og að minnsta kosti kosti 10 stafir')
+        .optional(),
+    categoryId: z.number().optional(),
+});
 export async function getQuestions() {
     const questions = await prisma.questions.findMany();
     console.log('questions :>> ', questions);
@@ -69,26 +79,33 @@ export async function createQuestion(data) {
     });
     return { question: newQuestion, created: true };
 }
-// updateQuestion
+// get question by categoryId
+export async function getQuestionsByCategoryId(categoryId) {
+    const questions = await prisma.questions.findMany({
+        where: { categoryId },
+        include: { answers: true },
+    });
+    return questions;
+}
+export function validateQuestionUpdate(data) {
+    return QuestionUpdateSchema.safeParse(data);
+}
 export async function updateQuestion(id, data) {
-    const sanatizedQuestion = sxss(data.question);
-    const sanatizedAnswers = data.answers.map(answer => ({
-        answer: sxss(answer.answer),
-        correct: answer.correct
-    }));
+    // Build the update object, sanitizing the question if provided.
+    const updateData = {};
+    if (data.question !== undefined) {
+        updateData.question = sxss(data.question);
+    }
+    if (data.categoryId !== undefined) {
+        updateData.categoryId = data.categoryId;
+    }
+    if (Object.keys(updateData).length === 0) {
+        throw new Error("No valid fields provided for update");
+    }
     const updatedQuestion = await prisma.questions.update({
         where: { id },
-        data: {
-            question: sanatizedQuestion,
-            categoryId: data.categoryId,
-            answers: {
-                deleteMany: {},
-                create: sanatizedAnswers
-            }
-        },
-        include: {
-            answers: true
-        }
+        data: updateData,
+        include: { answers: true }
     });
-    return { question: updatedQuestion, updated: true };
+    return updatedQuestion;
 }

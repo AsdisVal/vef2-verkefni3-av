@@ -42,13 +42,10 @@ export async function getCategories() {
 /**
  * safeParse skilar discriminatedUnion: SAMMENGI af Success og Error.
  * ef SafeParseSuccess<Output> er með success: true, veit það að það er í því mengi.
- * Það sama gildir með SafeParseError<Input> með success: false, veit að það er í
- * error menginu.
  * @param categoryToValidate: unknown
  * @returns validationResult
  */
 export function validateCategory(categoryToValidate) {
-    //notum zod með safeParse, sem tekur við gögnum sem er unknown
     const validationResult = CategoryToCreateSchema.safeParse(categoryToValidate);
     //þurfum nú að pæla hverju viljum við skila en þurfum ekki að ákveða 
     return validationResult;

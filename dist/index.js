@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { prettyJSON } from 'hono/pretty-json';
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js';
-import { getQuestions, validateQuestion, createQuestion, updateQuestion } from './routes/questions.db.js';
+import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId } from './routes/questions.db.js';
 const app = new Hono();
 /**
  * Þetta er Heimasíðan
@@ -136,29 +136,28 @@ app.get('/questions', async (c) => {
     }
 });
 /**
+ * READ: Skilar spurningum m.t.t. flokki(categoryId to be specific, the slug is not needed)
+ *
+ */
+app.get('/questions/:categoryId', async (c) => {
+    const categoryId = parseInt(c.req.param('categoryId'));
+    try {
+        const questions = await getQuestionsByCategoryId(categoryId);
+        if (!questions) {
+            return c.json({ message: 'Category not found' }, 404);
+        }
+        return c.json(questions, 200);
+    }
+    catch (err) {
+        console.error("Error fetching questions", err);
+        return c.json({ message: 'Internal error' }, 500);
+    }
+});
+/**
  * CREATE: Býr til nýja spurningu
  */
-app.post('/questions', async (c) => {
-    let rawData;
-    try {
-        rawData = await c.req.json();
-    }
-    catch (e) {
-        return c.json({ error: 'ógilt JSON' }, 400);
-    }
-    const validationResult = validateQuestion(rawData);
-    if (!validationResult.success) {
-        const errors = validationResult.error.flatten();
-        return c.json({ error: 'Ógild gögn', details: errors }, 400);
-    }
-    try {
-        const newQuestion = await createQuestion(validationResult.data);
-        return c.json(newQuestion, 201);
-    }
-    catch (error) {
-        console.error('Error creating question', error);
-        return c.json({ error: 'Internal error' }, 500);
-    }
+app.post('/questions/:id', async (c) => {
+    const id = parseInt(c.req.param('id'));
 });
 serve({
     fetch: app.fetch,
