@@ -29,7 +29,7 @@ prisma mun sjá um að tengjast gagnagrunni með DATABASE_URL
 strengnum
  */
 const prisma = new PrismaClient();
-const categoryCriteria = (slug) => ({ slug });
+const categoryCriteria = (/** @type {String} */ slug) => ({ slug });
 /**
  * Nær í flokkana úr gagnasafninu
  * (Vitnanir: GET/ categories)
@@ -53,12 +53,17 @@ export function validateCategory(categoryToValidate) {
 }
 /**
  * Finnur flokk með slug
- * @param slug fyrir category
+ * @param {String} slug fyrir category
  * @returns nafni fyrir category
  */
 export async function getCategory(slug) {
     return await prisma.categories.findUnique({ where: categoryCriteria(slug) });
 }
+/**
+ *
+ * @param {String} title
+ * @returns
+ */
 export async function createCategory(title) {
     // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
     title = sxss(title);
@@ -82,6 +87,8 @@ export async function createCategory(title) {
  * Uppfærir flokk með .update frá prisma
  * Uppfærir aðeins titilinn og endurgerir slug út frá nýja titlinum.
  * Skilar uppfærðum flokki eða null ef enginn flokk fannst.
+ * @param {String} slug fyrir category
+ * @param {String} title fyrir category
  */
 export async function updateCategory(slug, title) {
     // Generate a new slug from the updated title.
@@ -99,6 +106,10 @@ export async function updateCategory(slug, title) {
         return null;
     }
 }
+/**
+ *
+ * @param {String} slug
+ */
 export async function deleteCategory(slug) {
     try {
         await prisma.categories.delete({

@@ -35,7 +35,7 @@ prisma mun sjá um að tengjast gagnagrunni með DATABASE_URL
 strengnum
  */ 
 const prisma = new PrismaClient();
-const categoryCriteria = (slug: string) => ({ slug })
+const categoryCriteria = (/** @type {String} */ slug: string) => ({ slug })
 
 /**
  * Nær í flokkana úr gagnasafninu
@@ -63,13 +63,18 @@ export function validateCategory(categoryToValidate: unknown) {
 
 /**
  * Finnur flokk með slug
- * @param slug fyrir category
+ * @param {String} slug fyrir category
  * @returns nafni fyrir category
  */
 export async function getCategory(slug: string): Promise<Category | null> {
     return await prisma.categories.findUnique({ where: categoryCriteria(slug) });
   }
 
+  /**
+   * 
+   * @param {String} title 
+   * @returns 
+   */
 export async function createCategory(title: string): Promise<{ category: Category, created: boolean }> {
     // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)
     title = sxss(title);
@@ -97,6 +102,8 @@ export async function createCategory(title: string): Promise<{ category: Categor
  * Uppfærir flokk með .update frá prisma
  * Uppfærir aðeins titilinn og endurgerir slug út frá nýja titlinum.
  * Skilar uppfærðum flokki eða null ef enginn flokk fannst.
+ * @param {String} slug fyrir category
+ * @param {String} title fyrir category
  */
 export async function updateCategory(slug: string, title: string): Promise<Category | null> {
     // Generate a new slug from the updated title.
@@ -114,6 +121,11 @@ export async function updateCategory(slug: string, title: string): Promise<Categ
     }
   }
 
+  /**
+   * 
+   * @param {String} slug sluggið fyrir flokk
+   * @returns
+   */
   export async function deleteCategory(slug: string): Promise<boolean> {
     try {
         await prisma.categories.delete({

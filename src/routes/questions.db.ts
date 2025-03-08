@@ -70,12 +70,18 @@ export async function getQuestions(): Promise<Array<Question>> {
     console.log('questions :>> ', questions);
     return questions;
 }
-
+/**
+ * 
+ * @param {unknown} data
+ */
 export function validateQuestion(data: unknown) {
     const valResult = QuestionToCreateSchema.safeParse(data);
     return valResult;
 }
 
+/** 
+ * @param {{ question: string; answers: any[]; categoryId: any; }} question
+ * */ 
 export async function createQuestion(question: QuestionToCreate): Promise<{ question: Question, created: boolean}> {
     const sanatizedQuestion = sxss(question.question);
     const sanatizedAnswers = question.answers.map(answer => ({
@@ -99,7 +105,9 @@ export async function createQuestion(question: QuestionToCreate): Promise<{ ques
     return { question: newQuestion, created: true};
 } 
 
-// get question by categoryId
+/**
+ * @param {any} categoryId
+ */
 export async function getQuestionsByCategoryId(categoryId: number): Promise<Array<Question>> {
     const questions = await prisma.questions.findMany({
         where: { categoryId },
@@ -108,6 +116,9 @@ export async function getQuestionsByCategoryId(categoryId: number): Promise<Arra
     return questions;
 }
 
+/**
+ * @param {unknown} data
+ */
 export function validateQuestionUpdate(data: unknown) {
     return QuestionUpdateSchema.safeParse(data);
   }
