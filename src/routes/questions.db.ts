@@ -76,9 +76,9 @@ export function validateQuestion(data: unknown) {
     return valResult;
 }
 
-export async function createQuestion(data: QuestionToCreate): Promise<{ question: Question, created: boolean}> {
-    const sanatizedQuestion = sxss(data.question);
-    const sanatizedAnswers = data.answers.map(answer => ({
+export async function createQuestion(question: QuestionToCreate): Promise<{ question: Question, created: boolean}> {
+    const sanatizedQuestion = sxss(question.question);
+    const sanatizedAnswers = question.answers.map(answer => ({
         answer: sxss(answer.answer),
         correct: answer.correct
     }));
@@ -86,7 +86,7 @@ export async function createQuestion(data: QuestionToCreate): Promise<{ question
     const newQuestion = await prisma.questions.create({
         data: {
             question: sanatizedQuestion,
-            categoryId: data.categoryId,
+            categoryId: question.categoryId,
             answers: {
                 create: sanatizedAnswers
             }
@@ -113,6 +113,12 @@ export function validateQuestionUpdate(data: unknown) {
   }
 
 
+  /**
+   * 
+   * @param {number} id 
+   * @param {Partial<{ question: string; categoryId: number }>} data 
+   * @returns 
+   */
 export async function updateQuestion(
     id: number, 
     data: Partial<{ question: string; categoryId: number }>
@@ -145,6 +151,7 @@ export async function updateQuestion(
 
   /**
  * Deletes a question by its id.
+ * @param {number} id - The id of the question to delete.
  */
 export async function deleteQuestion(id: number): Promise<void> {
     await prisma.questions.delete({
