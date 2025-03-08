@@ -109,3 +109,11 @@ export async function updateQuestion(id, data) {
     });
     return updatedQuestion;
 }
+/**
+* Deletes a question by its id.
+*/
+export async function deleteQuestion(id) {
+    await prisma.questions.delete({
+        where: { id },
+    });
+}

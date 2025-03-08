@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { prettyJSON } from 'hono/pretty-json';
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js';
-import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId } from './routes/questions.db.js';
+import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId, deleteQuestion } from './routes/questions.db.js';
 const app = new Hono();
 /**
  * Þetta er Heimasíðan
@@ -153,11 +153,35 @@ app.get('/questions/:categoryId', async (c) => {
         return c.json({ message: 'Internal error' }, 500);
     }
 });
-/**
- * CREATE: Býr til nýja spurningu
- */
-app.post('/questions/:id', async (c) => {
+app.post('/questions', async (c) => {
+    console.log('POST /questions route hit, URL:', c.req.url);
+    try {
+        const bodyParsed = await c.req.json();
+        const result = validateQuestion(bodyParsed);
+        if (!result.success) {
+            return c.json({ error: 'Invalid data', details: result.error.flatten() }, 400);
+        }
+        const newQuestion = await createQuestion(result.data);
+        return c.json(newQuestion, 201);
+    }
+    catch (error) {
+        console.error('Error creating question', error);
+        return c.json({ error: 'Internal error' }, 500);
+    }
+});
+app.delete('/questions/:id', async (c) => {
     const id = parseInt(c.req.param('id'));
+    if (isNaN(id)) {
+        return c.json({ error: 'Invalid question id' }, 400);
+    }
+    try {
+        await deleteQuestion(id);
+        return c.newResponse(null, 204);
+    }
+    catch (error) {
+        console.error('Error deleting question:', error);
+        return c.json({ error: 'Internal Server Error' }, 500);
+    }
 });
 serve({
     fetch: app.fetch,

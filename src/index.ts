@@ -159,13 +159,20 @@ app.get('/questions/:categoryId', async (c) => {
 });
 
 
-/**
- * CREATE: Býr til nýja spurningu
- */
-app.post('/questions/:id', async (c) => {
-  const id = parseInt(c.req.param('id'));
-
-
+app.post('/questions', async (c) => {
+  console.log('POST /questions route hit, URL:', c.req.url);
+  try {
+    const bodyParsed = await c.req.json();
+    const result = validateQuestion(bodyParsed);
+    if (!result.success) {
+      return c.json({ error: 'Invalid data', details: result.error.flatten() }, 400);
+    }
+    const newQuestion = await createQuestion(result.data);
+    return c.json(newQuestion, 201);
+  } catch (error) {
+    console.error('Error creating question', error);
+    return c.json({ error: 'Internal error' }, 500);
+  }
 });
 
 app.delete('/questions/:id', async (c) => {
