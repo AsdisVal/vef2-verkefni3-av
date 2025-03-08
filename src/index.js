@@ -14,6 +14,7 @@ import {
   validateQuestion,
   createQuestion,
   updateQuestion,
+  validateQuestionUpdate,
 } from './routes/questions.db.js';
 const app = new Hono();
 /**
@@ -167,6 +168,35 @@ app.post('/questions', async (c) => {
     return c.json({ error: 'Internal error' }, 500);
   }
 });
+
+/**
+ * PATCH: uppfærir spurningu PATCH /questions/:id
+ */
+app.patch('/questions/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  if (isNaN(id)) {
+    return c.json({ error: 'Invalid question id' }, 400);
+  }
+
+  let data;
+  try {
+    const body = await c.req.json();
+    const result = validateQuestionUpdate(body);
+    if (!result.success) {
+      return c.json(
+        { error: 'Invalid data', details: result.error.flatten() },
+        400
+      );
+    }
+
+    const updatedQuestion = await updateQuestion(id, result.data);
+    return c.json(updatedQuestion, 200);
+  } catch (error) {
+    console.error('Error in PATCH /questions/:id:', error);
+    return c.json({ error: 'Internal Server Error' }, 500);
+  }
+});
+
 serve(
   {
     fetch: app.fetch,

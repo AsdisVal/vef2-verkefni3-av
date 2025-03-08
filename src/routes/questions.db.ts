@@ -9,6 +9,8 @@ import sxss from "xss";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
+const prisma = new PrismaClient();
+
 
 /**
  * zod-schema
@@ -45,10 +47,23 @@ const QuestionToCreateSchema = z.object({
     }),
 });
 
+
+/**
+ * Schema for updating a question(both fields are optional)
+ */
+const QuestionUpdateSchema = z.object({
+    question: z.string()
+    .min(10, 'Spurning verður að vera að minnsta kosti 10 stafir, að hámarki 1024')
+    .max(1024, 'Spurning er í mesta lagi 1024 stafir, og að minnsta kosti kosti 10 stafir')
+    .optional(),
+    categoryId: z.number().optional(),
+});
+
+
 type Question = z.infer<typeof QuestionSchema>;
 type QuestionToCreate = z.infer<typeof QuestionToCreateSchema>;
 
-const prisma = new PrismaClient();
+
 
 export async function getQuestions(): Promise<Array<Question>> {
     const questions = await prisma.questions.findMany();
@@ -84,36 +99,45 @@ export async function createQuestion(data: QuestionToCreate): Promise<{ question
     return { question: newQuestion, created: true};
 } 
 
-// updateQuestion
-export async function updateQuestion(id: number, data: QuestionToCreate): Promise<{ question: Question, updated: boolean}> {
-    const sanatizedQuestion = sxss(data.question);
-    const sanatizedAnswers = data.answers.map(answer => ({
-        answer: sxss(answer.answer),
-        correct: answer.correct
-    }));
-
-    const updatedQuestion = await prisma.questions.update({
-        where: { id },
-        data: {
-            question: sanatizedQuestion,
-            categoryId: data.categoryId,
-            answers: {
-                deleteMany: {},
-                create: sanatizedAnswers
-            }
-        },
-        include: {    
-            answers: true
-        }
-    });
-
-    return { question: updatedQuestion, updated: true};        
-}
-
 // get question by categoryId
 export async function getQuestionsByCategoryId(categoryId: number): Promise<Array<Question>> {
     const questions = await prisma.questions.findMany({
-        where: { categoryId }
+        where: { categoryId },
+        include: { answers: true },
     });
     return questions;
 }
+
+export function validateQuestionUpdate(data: unknown) {
+    return QuestionUpdateSchema.safeParse(data);
+  }
+
+
+export async function updateQuestion(
+    id: number, 
+    data: Partial<{ question: string; categoryId: number }>
+  ): Promise<Question> {
+    // Build the update object, sanitizing the question if provided.
+    const updateData: Partial<{ question: string; categoryId: number }> = {};
+    
+    if (data.question !== undefined) {
+      updateData.question = sxss(data.question);
+    }
+    
+    if (data.categoryId !== undefined) {
+      updateData.categoryId = data.categoryId;
+    }
+    
+    if (Object.keys(updateData).length === 0) {
+      throw new Error("No valid fields provided for update");
+    }
+    
+    const updatedQuestion = await prisma.questions.update({
+      where: { id },
+      data: updateData,
+      include: { answers: true }
+    });
+    
+    return updatedQuestion;
+  }
+  

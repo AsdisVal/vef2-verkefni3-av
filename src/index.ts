@@ -162,28 +162,11 @@ app.get('/questions/:categoryId', async (c) => {
 /**
  * CREATE: Býr til nýja spurningu
  */
-app.post('/questions', async (c) => {
-  let rawData: unknown;
-  try{
-    rawData = await c.req.json();
-  } catch (e) {
-    return c.json({ error: 'ógilt JSON'}, 400);
-  }
-  const validationResult = validateQuestion(rawData);
-  if(!validationResult.success) {
-    const errors = validationResult.error.flatten()
-    return c.json({error: 'Ógild gögn', details: errors }, 400);
-  }
-  
-  try {
-    const newQuestion = await createQuestion(validationResult.data);
-    return c.json(newQuestion, 201);
-  } catch (error) {
-    console.error('Error creating question', error);
-    return c.json({error: 'Internal error'}, 500);
-  }
-});    
+app.post('/questions/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
 
+
+});
 
 
 serve({
