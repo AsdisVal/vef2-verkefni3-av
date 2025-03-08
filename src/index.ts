@@ -2,7 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getCategory, validateCategory, createCategory, updateCategory, deleteCategory } from './routes/categories.db.js'
-import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId} from './routes/questions.db.js'
+import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId, deleteQuestion} from './routes/questions.db.js'
 
 const app = new Hono();
 /**
@@ -168,6 +168,20 @@ app.post('/questions/:id', async (c) => {
 
 });
 
+app.delete('/questions/:id', async (c) => {
+  const id = parseInt(c.req.param('id'));
+  if (isNaN(id)) {
+    return c.json({ error: 'Invalid question id' }, 400);
+  }
+
+  try {
+    await deleteQuestion(id);
+    return c.newResponse(null, 204);
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    return c.json({ error: 'Internal Server Error' }, 500);
+  }
+});
 
 serve({
   fetch: app.fetch,

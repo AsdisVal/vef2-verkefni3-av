@@ -141,3 +141,13 @@ export async function updateQuestion(
     return updatedQuestion;
   }
   
+
+
+  /**
+ * Deletes a question by its id.
+ */
+export async function deleteQuestion(id: number): Promise<void> {
+    await prisma.questions.delete({
+      where: { id },
+    });
+  }
