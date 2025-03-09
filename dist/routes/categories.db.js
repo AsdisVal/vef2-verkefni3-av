@@ -29,7 +29,7 @@ prisma mun sjá um að tengjast gagnagrunni með DATABASE_URL
 strengnum
  */
 const prisma = new PrismaClient();
-const categoryCriteria = (/** @type {String} */ slug) => ({ slug });
+const categoryCriteria = (/** @type {String} @returns */ slug) => ({ slug });
 /**
  * Nær í flokkana úr gagnasafninu
  * (Vitnanir: GET/ categories)
@@ -42,7 +42,7 @@ export async function getCategories() {
 /**
  * safeParse skilar discriminatedUnion: SAMMENGI af Success og Error.
  * ef SafeParseSuccess<Output> er með success: true, veit það að það er í því mengi.
- * @param categoryToValidate: unknown
+ * @param {unknown} categoryToValidate: unknown
  * @returns validationResult
  */
 export function validateCategory(categoryToValidate) {
@@ -60,9 +60,9 @@ export async function getCategory(slug) {
     return await prisma.categories.findUnique({ where: categoryCriteria(slug) });
 }
 /**
- *
+ * createCategory skilar uppfærðum flokki eða null ef enginn flokkur fannst.
  * @param {String} title
- * @returns
+ * @returns skilar uppfærðum flokki eða null ef enginn flokk fannst
  */
 export async function createCategory(title) {
     // Generate a slug from the title (e.g., convert to lowercase and replace spaces with hyphens)

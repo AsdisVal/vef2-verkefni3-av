@@ -183,9 +183,13 @@ app.delete('/questions/:id', async (c) => {
         return c.json({ error: 'Internal Server Error' }, 500);
     }
 });
-serve({
-    fetch: app.fetch,
-    port: 3000
-}, (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-});
+// Only start the server if not running tests.
+if (process.env.NODE_ENV !== 'test') {
+    serve({
+        fetch: app.fetch,
+        port: 3000,
+    }, (info) => {
+        console.log(`Server is running on http://localhost:${info.port}`);
+    });
+}
+export default app;
