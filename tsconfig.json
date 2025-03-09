@@ -8,8 +8,8 @@
     "types": [
       "node"
     ],
-    "outDir": "dist",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "outDir": "./dist"
   }
 }

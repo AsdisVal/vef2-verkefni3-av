@@ -4,10 +4,12 @@ import { getCategories, getCategory, validateCategory, createCategory, updateCat
 import { getQuestions, validateQuestion, createQuestion, getQuestionsByCategoryId, deleteQuestion} from './routes/questions.db.js'
 
 const app = new Hono();
+
+app.use(prettyJSON()); // With options: prettyJSON({ space: 4 })
+
 /**
  * Þetta er Heimasíðan
  */
-app.use(prettyJSON()); // With options: prettyJSON({ space: 4 })
 app.get('/', (c) => {
   const data = {
     hello:'hono'
