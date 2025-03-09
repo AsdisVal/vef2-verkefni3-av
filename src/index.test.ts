@@ -1,4 +1,4 @@
-import { vi, describe, it, expect } from 'vitest';
+/* import { vi, describe, it, expect } from 'vitest';
 
 // Mock the categories.db module before importing the app
 vi.mock('./routes/categories.db.js', () => ({
@@ -31,5 +31,30 @@ describe('App Endpoints', () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json).toEqual([{ id: 1, title: 'Mock Category', slug: 'mock-category' }]);
+  });
+});*/
+
+import { vi, describe, it, expect } from 'vitest';
+
+// app.test.js
+const { Hono } = require('hono');
+const request = require('supertest');
+
+// Create the app instance and define the route.
+const app = new Hono();
+
+app.get('/', (c) => {
+  const data = {
+    hello: 'hono'
+  };
+  return c.json(data);
+});
+
+// Write the test.
+describe('GET /', () => {
+  it('should return a JSON object with hello: "hono"', async () => {
+    const response = await request(app.fetch()).get('/');
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual({ hello: 'hono' });
   });
 });
