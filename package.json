@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "tester": "cross-env NODE_ENV=test vitest run --watch",
-    "test": "jest",
+    "test": "cross-env NODE_ENV=test jest",
     "build": "tsc",
     "x": "npx prisma generate",
     "start": "node ./dist/index.js",
@@ -24,11 +24,12 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.11.17",
     "cross-env": "^7.0.3",
     "eslint": "^9.22.0",
-    "jest": "^29.7.0",
     "ts-jest": "^29.2.6",
     "tsx": "^4.7.1",
     "typescript": "^5.8.2",
